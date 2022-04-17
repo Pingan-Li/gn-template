@@ -1,5 +1,4 @@
 config("global_config") {
-  cflags = [ "-fPIC" ]
   cflags_cc = [ "-std=c++17" ]
 }
 
@@ -52,7 +51,19 @@ config("executable") {
 }
 
 config("shared_library") {
+    cflags = [ "-fPIC" ]
 }
 
 config("static_libaray") {
+}
+
+config("coverage") {
+  cflags = [
+    "-fprofile-arcs",
+    "-ftest-coverage",
+  ]
+  ldflags = [
+    "--coverage",
+    "-lgcov",
+  ]
 }
