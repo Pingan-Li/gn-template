@@ -2,41 +2,6 @@ config("global_config") {
   cflags_cc = [ "-std=c++17" ]
 }
 
-config("debug") {
-  cflags = [
-    "-g",
-    "-O0",
-    "-Wall",
-    "-Wextra",
-  ]
-}
-
-config("unittest") {
-  cflags = [
-    "-g",
-    "-O0",
-    "-fpermissive",
-    "-fno-access-control",
-  ]
-}
-
-config("release") {
-  cflags = [
-    "-O3",
-    "-Wall",
-    "-Wextra",
-    "-Werror",
-  ]
-  defines = [ "NDEBUG" ]
-}
-
-config("asan") {
-  ldflags = [ "-fsanitize=address" ]
-}
-config("ubsan") {
-  ldflags = [ "-fsanitize=undefined" ]
-}
-
 config("executable") {
   if (host_os == "mac") {
   } else if (host_os == "linux") {
@@ -51,10 +16,45 @@ config("executable") {
 }
 
 config("shared_library") {
-    cflags = [ "-fPIC" ]
+  cflags = [ "-fPIC" ]
 }
 
 config("static_libaray") {
+}
+
+config("debug") {
+  cflags = [
+    "-g",
+    "-O0",
+    "-Wall",
+    "-Wextra",
+  ]
+}
+
+config("release") {
+  cflags = [
+    "-O3",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+  ]
+  defines = [ "NDEBUG" ]
+}
+
+config("unittest") {
+  cflags = [
+    "-g",
+    "-O0",
+    "-fpermissive",
+    "-fno-access-control",
+  ]
+}
+
+config("asan") {
+  ldflags = [ "-fsanitize=address" ]
+}
+config("ubsan") {
+  ldflags = [ "-fsanitize=undefined" ]
 }
 
 config("coverage") {
@@ -66,4 +66,9 @@ config("coverage") {
     "--coverage",
     "-lgcov",
   ]
+}
+
+config("homebrew") {
+  include_dirs = [ "/opt/homebrew/include" ]
+  lib_dirs = [ "/opt/homebrew/lib" ]
 }

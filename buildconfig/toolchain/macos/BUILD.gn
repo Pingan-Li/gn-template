@@ -54,7 +54,7 @@ toolchain("clang") {
     rspfile = soname + ".rsp"
     rspfile_content = "{{inputs}} {{solibs}} {{libs}}"
 
-    os_specific_option = "-install_name @loader_path/$sofile"
+    os_specific_option = "-install_name @rpath/$sofile"
 
     command =
         "clang++ -shared {{ldflags}} -o $sofile $os_specific_option @$rspfile"

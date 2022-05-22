@@ -1,14 +1,18 @@
 declare_args() {
   use_clang = false
-  use_strict_mode = false
-  build_type = "debug"
+  use_libcxx = false
   use_asan = false
   use_ubsan = false
+  use_strict_mode = false
+  build_type = "debug"
 }
 
+# toolchain
 if (host_os == "mac") {
   set_default_toolchain("toolchain/macos:clang")
-} else {
+}
+
+if (host_os == "linux") {
   if (use_clang) {
     set_default_toolchain("toolchain/linux:clang")
   } else {
@@ -16,9 +20,14 @@ if (host_os == "mac") {
   }
 }
 
+# compile configuration
 set_defaults("executable") {
   configs = [ "//buildconfig:global_config" ]
   configs += [ "//buildconfig:executable" ]
+
+  if (host_os == "mac") {
+    configs += [ "//buildconfig:homebrew" ]
+  }
 
   if (build_type == "release") {
     configs += [ "//buildconfig:release" ]
@@ -39,6 +48,10 @@ set_defaults("shared_library") {
   configs = [ "//buildconfig:global_config" ]
   configs += [ "//buildconfig:shared_library" ]
 
+  if (host_os == "mac") {
+    configs += [ "//buildconfig:homebrew" ]
+  }
+
   if (build_type == "release") {
     configs += [ "//buildconfig:release" ]
   } else if (build_type == "unittest") {
@@ -57,6 +70,11 @@ set_defaults("shared_library") {
 set_defaults("static_library") {
   configs = [ "//buildconfig:global_config" ]
   configs += [ "//buildconfig:static_libaray" ]
+
+  if (host_os == "mac") {
+    configs += [ "//buildconfig:homebrew" ]
+  }
+
   if (build_type == "release") {
     configs += [ "//buildconfig:release" ]
   } else if (build_type == "unittest") {
