@@ -1,0 +1,50 @@
+# Global Config
+config("global_config") {
+  cflags = []
+  cflags_c = []
+  cflags_cc = []
+  defines = []
+  ldflags = []
+
+  # language version
+  cflags_c += [ "-std=${std_c}" ]
+  cflags_cc += [ "-std=${std_cc}" ]
+
+  # build type
+  if (build_type == "debug") {
+    cflags += [
+      "-g",
+      "-O0",
+      "-Wall",
+      "-Wextra",
+    ]
+  } else if (build_type == "release") {
+    cflags += [
+      "-O3",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+    ]
+    defines += [ "NDEBUG" ]
+  }
+}
+
+config("executable") {
+  if (host_os == "mac") {
+  } else if (host_os == "linux") {
+    ldflags = [
+      # ld.so understands the string $ORIGIN (or equivalently ${ORIGIN}) in an rpath
+      # specification (DT_RPATH or DT_RUNPATH) to mean the directory containing the
+      # application executable.
+      #"-Wl,-rpath-link=\$ORIGIN",
+      "-Wl,-rpath=\$ORIGIN",
+    ]
+  }
+}
+
+config("shared_library") {
+  cflags = [ "-fPIC" ]
+}
+
+config("static_libaray") {
+}

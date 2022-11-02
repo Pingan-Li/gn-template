@@ -1,0 +1,83 @@
+toolchain("cxx") {
+  tool("cc") {
+    depfile = "{{output}}.d"
+    depsformat = "gcc"
+
+    command = "${cc} -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} $extra_cflags_c -c {{source}} -o {{output}}"
+    description = "CC {{output}}"
+
+    outfile = "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o"
+    outputs = [ outfile ]
+  }
+
+  tool("cxx") {
+    depfile = "{{output}}.d"
+    depsformat = "gcc"
+
+    command = "${cxx} -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}} $extra_cflags_cc -c {{source}} -o {{output}}"
+    description = "CXX {{output}}"
+
+    outfile = "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o"
+    outputs = [ outfile ]
+  }
+
+  tool("link") {
+    outfile = "{{target_output_name}}{{output_extension}}"
+    default_output_dir = "{{root_out_dir}}"
+
+    rspfile = "$outfile.rsp"
+    rspfile_content = "{{inputs}}"
+
+    command = "${cxx} {{ldflags}} $extra_ldflags -Wl,--start-group @$rspfile {{solibs}} -Wl,--end-group {{libs}} -o $outfile"
+    description = "LINK $outfile"
+
+    outputs = [ outfile ]
+  }
+
+  tool("solink") {
+    output_prefix = "lib"
+
+    # Use this for {{output_extension}} expansions unless a target manually
+    # overrides it (in which case {{output_extension}} will be what the target
+    # specifies).
+    default_output_extension = ".so"
+
+    # Use this for {{output_dir}} expansions unless a target manually overrides
+    # it (in which case {{output_dir}} will be what the target specifies).
+    default_output_dir = "{{root_out_dir}}"
+
+    soname = "{{target_output_name}}{{output_extension}}"  # e.g. "libfoo.so".
+    outfile = "{{output_dir}}/$soname"
+
+    os_specific_option = "-Wl,-soname=$soname"
+
+    rspfile = soname + ".rsp"
+    rspfile_content = "-Wl,--whole-archive {{inputs}} {{solibs}} -Wl,--no-whole-archive {{libs}}"
+
+    command = "${cxx} -shared {{ldflags}} $extra_ldflags $os_specific_option @$rspfile -o $outfile"
+    description = "SOLINK $soname"
+
+    outputs = [ outfile ]
+  }
+
+  tool("alink") {
+    output_prefix = "lib"
+    default_output_extension = ".a"
+
+    command = "rm -f {{output}} && ar rcs {{output}} {{inputs}}"
+    description = "AR {{target_output_name}}{{output_extension}}"
+
+    outfile = "{{target_out_dir}}/{{target_output_name}}{{output_extension}}"
+    outputs = [ outfile ]
+  }
+
+  tool("stamp") {
+    command = "touch {{output}}"
+    description = "STAMP {{output}}"
+  }
+
+  tool("copy") {
+    command = "cp -af {{source}} {{output}}"
+    description = "COPY {{source}} {{output}}"
+  }
+}

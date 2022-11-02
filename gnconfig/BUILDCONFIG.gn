@@ -1,0 +1,52 @@
+declare_args() {
+  # gcc or clang
+  cc = "gcc"
+  # g++ or clang++
+  cxx = "g++"
+
+  # C language version, e.g. c17
+  std_c = "c17"
+  # C++ language version, e.g. c++17
+  std_cc = "c++17"
+
+  # extra flags.
+  extra_cflags_c = ""
+  extra_cflags_cc = ""
+  extra_ldflags = ""
+  
+  # extra defines.
+  extra_defines_c = ""
+  extra_defines_cc = ""
+
+  # debug or release
+  build_type = "debug"
+}
+# GN has only six internal args. they are:
+# host_os, target_os, current_os,
+# host_cpu, target_cpu, currnet_cpu.
+
+
+# toolchain
+if (host_os == "mac") {
+  set_default_toolchain("toolchain/macos:clang")
+}
+
+if (host_os == "linux") {
+  set_default_toolchain("toolchain/linux:cxx")
+}
+
+# default config.
+set_defaults("executable") {
+  configs = [ "//gnconfig:global_config" ]
+  configs += [ "//gnconfig:executable" ]
+}
+
+set_defaults("shared_library") {
+  configs = [ "//gnconfig:global_config" ]
+  configs += [ "//gnconfig:shared_library" ]
+}
+
+set_defaults("static_library") {
+  configs = [ "//gnconfig:global_config" ]
+  configs += [ "//gnconfig:static_libaray" ]
+}

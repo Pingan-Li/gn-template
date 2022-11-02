@@ -3,64 +3,22 @@ toolchain("clang") {
     depfile = "{{output}}.d"
     depsformat = "gcc"
 
-    command = "clang -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} -c {{source}} -o {{output}}"
+    command = "clang -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} $extra_cflags_c -c {{source}} -o {{output}}"
     description = "CC {{output}}"
 
-    outputs =
-        [ "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o" ]
+    outfile = "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o"
+    outputs = [ outfile ]
   }
 
   tool("cxx") {
     depfile = "{{output}}.d"
     depsformat = "gcc"
 
-    command = "clang++ -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}} -c {{source}} -o {{output}}"
+    command = "clang++ -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}} $extra_cflags_cc -c {{source}} -o {{output}}"
     description = "CXX {{output}}"
 
-    outputs =
-        [ "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o" ]
-  }
-
-  tool("alink") {
-    output_prefix = "lib"
-    default_output_extension = ".a"
-
-    command = "rm -f {{output}} && ar rcs {{output}} {{inputs}}"
-    description = "AR {{target_output_name}}{{output_extension}}"
-
-    outputs =
-        [ "{{target_out_dir}}/{{target_output_name}}{{output_extension}}" ]
-  }
-
-  tool("solink") {
-    # Use this for {{output_dir}} expansions unless a target manually overrides
-    # it (in which case {{output_dir}} will be what the target specifies).
-
-    default_output_dir = "{{root_out_dir}}"
-    output_prefix = "lib"
-
-    # Use this for {{output_extension}} expansions unless a target manually
-    # overrides it (in which case {{output_extension}} will be what the target
-    # specifies).
-    default_output_extension = ".dylib"
-
-    soname = "{{target_output_name}}{{output_extension}}"
-    sofile = "{{output_dir}}/$soname"
-
-    # On some systems (such as older UNIX systems and certain Windows variants) command-lines have relatively limited lengths.
-    # Windows compilers therefore support "response files". These files are mentioned on the command-line (using the "@file") syntax.
-    # The compiler reads these files and inserts the contents into argv, thereby working around the command-line length limits.
-    # This feature is frequently requested by Windows users of GCC.
-    rspfile = soname + ".rsp"
-    rspfile_content = "{{inputs}} {{solibs}} {{libs}}"
-
-    os_specific_option = "-install_name @rpath/$sofile"
-
-    command =
-        "clang++ -shared {{ldflags}} -o $sofile $os_specific_option @$rspfile"
-    description = "SOLINK $soname"
-
-    outputs = [ sofile ]
+    outfile = "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o"
+    outputs = [ outfile ]
   }
 
   tool("link") {
@@ -70,9 +28,50 @@ toolchain("clang") {
     rspfile = "$outfile.rsp"
     rspfile_content = "{{inputs}}"
 
-    command = "clang++ {{ldflags}} -o $outfile @$rspfile {{solibs}} {{libs}}"
+    command = "clang++ {{ldflags}} $extra_ldflags @$rspfile {{solibs}} {{libs}} -o $outfile"
     description = "LINK $outfile"
 
+    outputs = [ outfile ]
+  }
+
+  tool("solink") {
+    # Use this for {{output_dir}} expansions unless a target manually overrides
+    # it (in which case {{output_dir}} will be what the target specifies).
+    output_prefix = "lib"
+
+    # Use this for {{output_extension}} expansions unless a target manually
+    # overrides it (in which case {{output_extension}} will be what the target
+    # specifies).
+    default_output_extension = ".dylib"
+
+    default_output_dir = "{{root_out_dir}}"
+
+    soname = "{{target_output_name}}{{output_extension}}"
+    outfile = "{{output_dir}}/$soname"
+
+    # On some systems (such as older UNIX systems and certain Windows variants) command-lines have relatively limited lengths.
+    # Windows compilers therefore support "response files". These files are mentioned on the command-line (using the "@file") syntax.
+    # The compiler reads these files and inserts the contents into argv, thereby working around the command-line length limits.
+    # This feature is frequently requested by Windows users of GCC.
+    rspfile = soname + ".rsp"
+    rspfile_content = "{{inputs}} {{solibs}} {{libs}}"
+
+    os_specific_option = "-install_name @loader_path/$outfile"
+
+    command = "clang++ -shared {{ldflags}} $extra_ldflags $os_specific_option @$rspfile -o $outfile"
+    description = "SOLINK $soname"
+
+    outputs = [ outfile ]
+  }
+
+  tool("alink") {
+    output_prefix = "lib"
+    default_output_extension = ".a"
+
+    command = "rm -f {{output}} && ar rcs {{output}} {{inputs}}"
+    description = "AR {{target_output_name}}{{output_extension}}"
+
+    outfile = "{{target_out_dir}}/{{target_output_name}}{{output_extension}}"
     outputs = [ outfile ]
   }
 
